@@ -1,0 +1,57 @@
+spring.datasource:
+  url: ${JDBC_URL:jdbc:h2:./camunda-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+  username: ${JDBC_USER:sa}
+  password: ${JDBC_PASSWORD:sa}
+#spring.h2.console.enabled: true
+
+server:
+  port: 8080
+#  servlet.context-path: /camunda
+
+camunda.bpm:
+  history-level: audit
+  authorization:
+    enabled: true
+  filter:
+    create: All tasks
+  webapp.application-path:
+
+# Externalized Keycloak configuration
+keycloak:
+  # SSO Authentication requests. Send by application as redirect to the browser
+  url.auth: ${KEYCLOAK_URL_AUTH:http://localhost:8180}
+  # SSO Token requests. Send from the application to Keycloak
+  url.token: ${KEYCLOAK_URL_TOKEN:http://localhost:8180}
+  # Keycloak access for the Identity Provider plugin.
+  url.plugin: ${KEYCLOAK_URL_PLUGIN:https://localhost:8181}
+  # Keycloak Camunda Identity Client
+  client.id: ${KEYCLOAK_CLIENT_ID:camunda-identity-service}
+  client.secret: ${KEYCLOAK_CLIENT_SECRET:53ccd25a-379a-464a-9d02-788e28f59489}
+
+  # Camunda Keycloak Identity Provider Plugin
+plugin.identity.keycloak:
+  keycloakIssuerUrl: ${keycloak.url.plugin}/auth/realms/demo
+  keycloakAdminUrl: ${keycloak.url.plugin}/auth/admin/realms/demo
+  clientId: ${keycloak.client.id}
+  clientSecret: ${keycloak.client.secret}
+  useEmailAsCamundaUserId: false
+  administratorGroupName: group1
+#  useUsernameAsCamundaUserId: true
+#  useGroupPathAsCamundaGroupId: true
+  disableSSLCertificateValidation: true
+
+  # Spring Boot SSO OAuth2 Security
+security:
+  oauth2:
+    client:
+      client-id: ${keycloak.client.id}
+      client-secret: ${keycloak.client.secret}
+      accessTokenUri: ${keycloak.url.token}/auth/realms/demo/protocol/openid-connect/token
+      userAuthorizationUri: ${keycloak.url.auth}/auth/realms/demo/protocol/openid-connect/auth
+      scope: openid profile email
+    resource:
+      userInfoUri: ${keycloak.url.auth}/auth/realms/demo/protocol/openid-connect/userinfo
+
+#debug: true
+#logging.level.org.springframework.security: DEBUG
+

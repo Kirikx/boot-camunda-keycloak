@@ -1,0 +1,57 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.4.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'java'
+	id 'com.palantir.docker' version '0.22.1'
+	id "com.palantir.docker-run" version "0.22.1"
+}
+
+docker {
+	name "kvsemenov/${project.name}:${project.version}"
+	files "$buildDir/libs/"
+}
+docker.dependsOn build
+
+dockerRun {
+	name "${project.name}"
+	image "kvsemenov/${project.name}:${project.version}"
+	ports '8080:8080'
+	clean true
+}
+
+sourceCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+//camunda boot
+	implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:7.13.0'
+	implementation 'org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:7.13.0'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc:2.2.5.RELEASE'
+
+// keycloak
+	implementation 'org.camunda.bpm.extension:camunda-bpm-identity-keycloak:1.5.0'
+
+// security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.5.RELEASE'
+
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+	runtimeOnly 'com.h2database:h2'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+compileJava.inputs.files(processResources)
+
+test {
+	useJUnitPlatform()
+}
